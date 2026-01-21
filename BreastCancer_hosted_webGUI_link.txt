@@ -3,9 +3,9 @@ BREAST CANCER PREDICTION SYSTEM
 Hosted Web GUI Information
 ==========================================
 
-Name: [Your Full Name Here]
+Name: Eneasato David Chibueze
 
-Matric Number: [Your Matric Number Here]
+Matric Number: 23CG034068
 
 Machine Learning Algorithm Used: Logistic Regression
 
@@ -14,18 +14,17 @@ Model Persistence Method Used: Joblib
 Live URL of Hosted Application: [Your deployment URL here]
 Example: https://breast-cancer-prediction-xyz.onrender.com
 
-GitHub Repository Link: [Your GitHub repository URL here]
-Example: https://github.com/yourusername/BreastCancer_Project_yourName_matricNo
+GitHub Repository Link: https://github.com/PenDatabase/BreastCancer_Project_Eneasato_David_23CG034068.git
 
 ==========================================
 DEPLOYMENT NOTES
 ==========================================
 
-Platform Used: [e.g., Render.com / PythonAnywhere / Streamlit Cloud / Vercel]
+Platform Used: Render
 
-Deployment Date: [Date]
+Deployment Date: 21-1-2026
 
-Status: [Active / Under Maintenance]
+Status: Active
 
 ==========================================
 PROJECT SUMMARY
