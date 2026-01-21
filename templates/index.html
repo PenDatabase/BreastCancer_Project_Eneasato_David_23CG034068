@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Breast Cancer Prediction System - Educational Machine Learning Application">
+    <meta name="author" content="Your Name">
+    <title>Breast Cancer Prediction System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    <div>
+                        <h1 class="logo-title">Breast Cancer Prediction System</h1>
+                        <p class="logo-subtitle">Machine Learning-Based Diagnosis Assistant</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Disclaimer Banner -->
+            <div class="disclaimer-banner">
+                <svg class="warning-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <strong>Educational Use Only:</strong> This system is designed for educational purposes and 
+                    should NOT be used for actual medical diagnosis. Always consult qualified healthcare professionals.
+                </div>
+            </div>
+
+            <!-- Main Grid -->
+            <div class="main-grid">
+                <!-- Input Panel -->
+                <div class="card input-panel">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Enter Tumor Features
+                        </h2>
+                        <p class="card-subtitle">Input the following measurements from the diagnostic report</p>
+                    </div>
+                    
+                    <form id="predictionForm" class="prediction-form">
+                        {% for feature_key, metadata in features.items() %}
+                        <div class="form-group">
+                            <label for="{{ feature_key }}" class="form-label">
+                                {{ metadata.display_name }}
+                                <span class="tooltip-trigger" data-tooltip="{{ metadata.description }}">
+                                    <svg class="info-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M12 16v-4m0-4h.01"/>
+                                    </svg>
+                                </span>
+                            </label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="number" 
+                                    id="{{ feature_key }}" 
+                                    name="{{ feature_key }}"
+                                    class="form-input"
+                                    step="0.01"
+                                    min="{{ metadata.min }}"
+                                    max="{{ metadata.max }}"
+                                    placeholder="Enter value ({{ metadata.typical_range[0] }} - {{ metadata.typical_range[1] }})"
+                                    required
+                                />
+                                <span class="input-unit">{{ metadata.unit }}</span>
+                            </div>
+                            <p class="form-hint">Typical range: {{ metadata.typical_range[0] }} - {{ metadata.typical_range[1] }}</p>
+                        </div>
+                        {% endfor %}
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary" id="predictBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                                </svg>
+                                <span id="btnText">Predict Diagnosis</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="resetBtn">
+                                <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                Reset Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Results Panel -->
+                <div class="card results-panel">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <svg class="section-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                            </svg>
+                            Prediction Results
+                        </h2>
+                    </div>
+
+                    <!-- Initial State -->
+                    <div id="initialState" class="result-state">
+                        <svg class="result-placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        <h3>Awaiting Input</h3>
+                        <p>Enter the tumor feature values and click "Predict Diagnosis" to see the results</p>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="loadingState" class="result-state" style="display: none;">
+                        <div class="spinner"></div>
+                        <h3>Analyzing...</h3>
+                        <p>Processing tumor features and generating prediction</p>
+                    </div>
+
+                    <!-- Results Display -->
+                    <div id="resultsDisplay" style="display: none;">
+                        <!-- Diagnosis Card -->
+                        <div id="diagnosisCard" class="diagnosis-card">
+                            <div class="diagnosis-icon-wrapper">
+                                <svg id="diagnosisIcon" class="diagnosis-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="diagnosis-content">
+                                <h3 class="diagnosis-label">Predicted Diagnosis</h3>
+                                <p id="diagnosisResult" class="diagnosis-result">--</p>
+                                <p id="confidenceText" class="confidence-text">Confidence: --</p>
+                            </div>
+                        </div>
+
+                        <!-- Probability Breakdown -->
+                        <div class="probability-section">
+                            <h4 class="section-subtitle">Probability Breakdown</h4>
+                            
+                            <div class="probability-item">
+                                <div class="probability-header">
+                                    <span class="probability-label">Malignant</span>
+                                    <span id="malignantProb" class="probability-value">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div id="malignantBar" class="progress-fill progress-malignant" style="width: 0%"></div>
+                                </div>
+                            </div>
+
+                            <div class="probability-item">
+                                <div class="probability-header">
+                                    <span class="probability-label">Benign</span>
+                                    <span id="benignProb" class="probability-value">0%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div id="benignBar" class="progress-fill progress-benign" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Additional Info -->
+                        <div class="info-section">
+                            <div class="info-item">
+                                <svg class="info-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <div>
+                                    <p class="info-label">Timestamp</p>
+                                    <p id="timestamp" class="info-value">--</p>
+                                </div>
+                            </div>
+                            <div class="info-item">
+                                <svg class="info-item-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                          d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                <div>
+                                    <p class="info-label">Algorithm</p>
+                                    <p class="info-value">Logistic Regression</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Display -->
+                    <div id="errorDisplay" class="error-state" style="display: none;">
+                        <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <h3>Error</h3>
+                        <p id="errorMessage">An error occurred while processing your request</p>
+                        <button class="btn btn-secondary btn-sm" onclick="resetResults()">Try Again</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info Cards -->
+            <div class="info-cards">
+                <div class="info-card">
+                    <div class="info-card-icon info-card-icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="info-card-title">Logistic Regression</h3>
+                        <p class="info-card-text">Binary classification algorithm trained on Wisconsin dataset</p>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon info-card-icon-green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="info-card-title">5 Key Features</h3>
+                        <p class="info-card-text">Selected features: radius, texture, perimeter, compactness, concavity</p>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="info-card-icon info-card-icon-purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="info-card-title">Educational Project</h3>
+                        <p class="info-card-text">Created for COS331 - Artificial Intelligence coursework</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <p>&copy; 2026 Breast Cancer Prediction System. For Educational Use Only.</p>
+                <p class="footer-links">
+                    <a href="#" onclick="showAbout()">About</a>
+                    <span>•</span>
+                    <a href="/health" target="_blank">Health Check</a>
+                    <span>•</span>
+                    <a href="/info" target="_blank">Model Info</a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // DOM Elements
+        const form = document.getElementById('predictionForm');
+        const predictBtn = document.getElementById('predictBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const btnText = document.getElementById('btnText');
+
+        // State elements
+        const initialState = document.getElementById('initialState');
+        const loadingState = document.getElementById('loadingState');
+        const resultsDisplay = document.getElementById('resultsDisplay');
+        const errorDisplay = document.getElementById('errorDisplay');
+
+        // Result elements
+        const diagnosisCard = document.getElementById('diagnosisCard');
+        const diagnosisResult = document.getElementById('diagnosisResult');
+        const diagnosisIcon = document.getElementById('diagnosisIcon');
+        const confidenceText = document.getElementById('confidenceText');
+        const malignantProb = document.getElementById('malignantProb');
+        const benignProb = document.getElementById('benignProb');
+        const malignantBar = document.getElementById('malignantBar');
+        const benignBar = document.getElementById('benignBar');
+        const timestamp = document.getElementById('timestamp');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await makePrediction();
+        });
+
+        // Reset button
+        resetBtn.addEventListener('click', () => {
+            form.reset();
+            resetResults();
+        });
+
+        // Make prediction
+        async function makePrediction() {
+            try {
+                // Show loading state
+                showLoading();
+
+                // Collect form data
+                const formData = new FormData(form);
+                const data = {};
+                formData.forEach((value, key) => {
+                    data[key] = parseFloat(value);
+                });
+
+                // Make API request
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayResults(result.result);
+                } else {
+                    showError(result.error || 'An error occurred');
+                }
+
+            } catch (error) {
+                console.error('Prediction error:', error);
+                showError('Failed to connect to the server. Please try again.');
+            }
+        }
+
+        // Display results
+        function displayResults(result) {
+            const isBenign = result.diagnosis === 'Benign';
+
+            // Update diagnosis
+            diagnosisResult.textContent = result.diagnosis;
+            confidenceText.textContent = `Confidence: ${result.confidence}%`;
+
+            // Update card styling
+            diagnosisCard.className = `diagnosis-card ${isBenign ? 'diagnosis-benign' : 'diagnosis-malignant'}`;
+
+            // Update icon
+            if (isBenign) {
+                diagnosisIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                `;
+            } else {
+                diagnosisIcon.innerHTML = `
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                `;
+            }
+
+            // Update probabilities
+            malignantProb.textContent = `${result.probabilities.malignant}%`;
+            benignProb.textContent = `${result.probabilities.benign}%`;
+            malignantBar.style.width = `${result.probabilities.malignant}%`;
+            benignBar.style.width = `${result.probabilities.benign}%`;
+
+            // Update timestamp
+            timestamp.textContent = result.timestamp;
+
+            // Show results
+            hideAllStates();
+            resultsDisplay.style.display = 'block';
+
+            // Animate bars
+            setTimeout(() => {
+                malignantBar.style.transition = 'width 0.8s ease-out';
+                benignBar.style.transition = 'width 0.8s ease-out';
+            }, 100);
+        }
+
+        // Show loading state
+        function showLoading() {
+            hideAllStates();
+            loadingState.style.display = 'flex';
+            predictBtn.disabled = true;
+            btnText.textContent = 'Processing...';
+        }
+
+        // Show error
+        function showError(message) {
+            hideAllStates();
+            errorMessage.textContent = message;
+            errorDisplay.style.display = 'flex';
+            predictBtn.disabled = false;
+            btnText.textContent = 'Predict Diagnosis';
+        }
+
+        // Reset results
+        function resetResults() {
+            hideAllStates();
+            initialState.style.display = 'flex';
+            predictBtn.disabled = false;
+            btnText.textContent = 'Predict Diagnosis';
+        }
+
+        // Hide all states
+        function hideAllStates() {
+            initialState.style.display = 'none';
+            loadingState.style.display = 'none';
+            resultsDisplay.style.display = 'none';
+            errorDisplay.style.display = 'none';
+        }
+
+        // Show about modal
+        function showAbout() {
+            alert(
+                'Breast Cancer Prediction System\n\n' +
+                'Algorithm: Logistic Regression\n' +
+                'Dataset: Breast Cancer Wisconsin (Diagnostic)\n' +
+                'Features: 5 selected tumor characteristics\n' +
+                'Purpose: Educational demonstration\n\n' +
+                'DISCLAIMER: This system is for educational purposes only ' +
+                'and should NOT be used for actual medical diagnosis.'
+            );
+        }
+
+        // Tooltip functionality
+        document.querySelectorAll('.tooltip-trigger').forEach(trigger => {
+            trigger.addEventListener('mouseenter', (e) => {
+                const tooltip = e.target.closest('.tooltip-trigger').dataset.tooltip;
+                // You can implement a proper tooltip here
+                trigger.title = tooltip;
+            });
+        });
+
+        // Input validation
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                const min = parseFloat(e.target.min);
+                const max = parseFloat(e.target.max);
+
+                if (value < min || value > max) {
+                    e.target.style.borderColor = '#e74c3c';
+                } else {
+                    e.target.style.borderColor = '#e0e0e0';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
